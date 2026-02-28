@@ -7,30 +7,49 @@ from preprocessor import CustomPreprocessor
 st.set_page_config(page_title="FlightVerdict", page_icon="✈️", layout="centered")
 st.markdown("""
     <style>
-    /* 1. إبقاء الخلفية متدرجة كما تحبين */
+    /* 1. الإبقاء على الخلفية المتدرجة الزرقاء كما هي */
     .stApp {
         background: linear-gradient(to bottom, #87CEEB 0%, #F0F8FF 100%);
     }
-
-    /* 2. تعديل مربعات الاختيار (Selectbox) والقوائم لتصبح بيضاء */
+    
+    /* 2. جعل مربعات الـ Selectbox بيضاء تماماً */
     div[data-baseweb="select"] > div {
         background-color: white !important;
-        color: #003366 !important; /* لون النص داخل المربع */
+        border-radius: 5px;
+        color: #003366 !important; /* لون النص داخل المربع عند الاختيار */
     }
 
-    /* 3. تعديل مربعات الإدخال الرقمي (Number Input) لتصبح بيضاء */
-    div[data-baseweb="input"] > div {
+    /* 3. تعديل خاص لمربعات الـ Number Input (الأرقام) لتصبح بيضاء بالكامل */
+    /* هذا يشمل الخلفية وأزرار الزيادة والنقصان */
+    div[data-baseweb="input"] {
+        background-color: white !important;
+        border-radius: 5px;
+    }
+    
+    /* جعل الأزرار (+ و -) بيضاء */
+    div[data-baseweb="input"] button {
+        background-color: white !important;
+        color: #003366 !important; /* لون الرموز داخل الأزرار */
+        border: none !important;
+    }
+
+    /* ضمان أن حقل النص نفسه أبيض */
+    div[data-baseweb="input"] input {
         background-color: white !important;
         color: #003366 !important;
     }
-
-    /* 4. التأكد من أن نصوص العناوين واضحة باللون الأزرق الداكن */
-    h1, h2, h3, p, label {
+    
+    /* 4. تثبيت ألوان نصوص العناوين والأسماء (Labels) لتكون واضحة وغامقة */
+    h1, h2, h3, p, label, .stMarkdown {
         color: #003366 !important;
-        font-weight: bold;
     }
 
-    /* 5. تنسيق الزر ليظل مميزاً */
+    /* 5. تنسيق التبويبات (Tabs) لتظهر بوضوح فوق الخلفية المتدرجة */
+    .stTabs [data-baseweb="tab-list"] button {
+        color: #003366 !important;
+    }
+
+    /* 6. تنسيق زر "Analyze Satisfaction" ليظل مميزاً */
     .stButton>button {
         background-color: #0074D9;
         color: white !important;
