@@ -7,15 +7,33 @@ from preprocessor import CustomPreprocessor
 st.set_page_config(page_title="FlightVerdict", page_icon="✈️", layout="centered")
 st.markdown("""
     <style>
+    /* 1. إبقاء الخلفية متدرجة كما تحبين */
     .stApp {
         background: linear-gradient(to bottom, #87CEEB 0%, #F0F8FF 100%);
     }
-    h1, h2, h3, p, label {
+
+    /* 2. تعديل مربعات الاختيار (Selectbox) والقوائم لتصبح بيضاء */
+    div[data-baseweb="select"] > div {
+        background-color: white !important;
+        color: #003366 !important; /* لون النص داخل المربع */
+    }
+
+    /* 3. تعديل مربعات الإدخال الرقمي (Number Input) لتصبح بيضاء */
+    div[data-baseweb="input"] > div {
+        background-color: white !important;
         color: #003366 !important;
     }
+
+    /* 4. التأكد من أن نصوص العناوين واضحة باللون الأزرق الداكن */
+    h1, h2, h3, p, label {
+        color: #003366 !important;
+        font-weight: bold;
+    }
+
+    /* 5. تنسيق الزر ليظل مميزاً */
     .stButton>button {
         background-color: #0074D9;
-        color: white;
+        color: white !important;
         border-radius: 20px;
         width: 100%;
     }
