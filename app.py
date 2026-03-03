@@ -69,50 +69,54 @@ model = load_model()
 # 3. واجهة المستخدم (العناوين)
 st.title("✈️ FlightVerdict")
 st.markdown("### Predicting Passenger Satisfaction using Machine Learning")
-st.write("Please enter the flight details and passenger ratings below:")
-
-# 4. تقسيم المدخلات إلى أعمدة لجعل التصميم أجمل
 
 # 4. تقسيم المدخلات إلى تبويبات لتنظيم الـ 14 خدمة
-tab1, tab2, tab3 = st.tabs(["📋 Passenger Info", "🛋️ Comfort & Entertainment", "🛡️ Service & Logistics"])
-
-with tab1:
-    col1, col2 = st.columns(2)
-    with col1:
+st.markdown("### 📋 Passenger Info")
+col1, col2 = st.columns(2)
+with col1:
         gender = st.selectbox("Gender", ["Male", "Female"], index=None, placeholder=" ")
         customer_type = st.selectbox("Customer Type", ["Loyal Customer", "disloyal Customer"], index=None, placeholder=" ")
         type_of_travel = st.selectbox("Type of Travel", ["Business travel", "Personal Travel"], index=None, placeholder=" ")
         arrival_delay = st.number_input("Arrival Delay (min)", 0, 1000, 0)
-    with col2:
+with col2:
         flight_class = st.selectbox("Class", ["Business", "Eco", "Eco Plus"], index=None, placeholder=" ")
         age = st.number_input("Age", 1, 100, 25)
         flight_distance = st.number_input("Flight Distance (km)", 1, 10000, 1000)
         departure_delay = st.number_input("Departure Delay (min)", 0, 1000, 0)
 
-with tab2:
-    # التقييمات الخاصة بالراحة والرفاهية
-    wifi_service = st.slider("Inflight wifi service", 0, 5)
-    online_booking = st.slider("Ease of Online booking", 0, 5)
-    food_drink = st.slider("Food and drink", 0, 5)
-    seat_comfort = st.slider("Seat comfort", 0, 5)
-    cleanliness = st.slider("Cleanliness", 0, 5)
-    entertainment = st.slider("Inflight entertainment", 0, 5)
-with tab3:
-    # التقييمات الخاصة بالخدمات اللوجستية والمطار
-    on_board = st.slider("On-board service", 0, 5)
-    leg_room = st.slider("Leg room service", 0, 5)
-    baggage = st.slider("Baggage handling", 0, 5)
-    checkin = st.slider("Check-in service", 0, 5)
-    inflight_serv = st.slider("Inflight service", 0, 5)
-    online_boarding = st.slider("Online boarding", 0, 5)
-    gate_loc = st.slider("Gate location", 0, 5)
-    time_conv = st.slider("Departure/Arrival time convenient", 0, 5)
-# 5. زر التنبؤ
-if st.button("Analyze Satisfaction"):
-    # تجهيز البيانات بالأسماء "الصغيرة" المتوقعة في الـ Preprocessor
-    # ملاحظة: unnamed:_0 يجب أن يكون سمول كما طلب الموديل
+col1, col2 = st.columns(2)
+with col1:
+    st.markdown("### 🛋️ Comfort & Entertainment")
+    wifi_service = st.select_slider("Inflight wifi service",options=["",0,1,2,3,4,5],value="")
+    online_booking = st.select_slider("Ease of Online booking", options=["",0,1,2,3,4,5], value="")
+    food_drink = st.select_slider("Food and drink", options=["",0,1,2,3,4,5], value="")
+    seat_comfort = st.select_slider("Seat comfort", options=["",0,1,2,3,4,5], value="")
+    cleanliness = st.select_slider("Cleanliness", options=["",0,1,2,3,4,5], value="")
+    entertainment = st.select_slider("Inflight entertainment", options=["",0,1,2,3,4,5], value="")
+with col2:
+    st.markdown("### 🛡️ Service & Logistics")
+    on_board = st.select_slider("On-board service", options=["",0,1,2,3,4,5], value="")
+    leg_room = st.select_slider("Leg room service", options=["",0,1,2,3,4,5], value="")
+    baggage = st.select_slider("Baggage handling", options=["",0,1,2,3,4,5], value="")
+    checkin = st.select_slider("Check-in service", options=["",0,1,2,3,4,5], value="")
+    inflight_serv = st.select_slider("Inflight service", options=["",0,1,2,3,4,5], value="")
+    online_boarding = st.select_slider("Online boarding", options=["",0,1,2,3,4,5], value="")
 
 
+# التحقق أن المستخدم حرك جميع السلايدرات بعيداً عن -1
+sliders = [wifi_service, online_booking, food_drink, seat_comfort, cleanliness, 
+           entertainment, on_board, leg_room, baggage, checkin, inflight_serv, online_boarding]
+
+#all_sliders_touched = all(s is not None for s in sliders)
+all_sliders_touched = all(s != "" for s in sliders)
+# 1. جمع شروط التحقق
+# يجب ألا تكون الاختيارات None ويجب ألا يكون العمر 0
+is_ready = (gender is not None) and (customer_type is not None) and (type_of_travel is not None) and (flight_class is not None) and all_sliders_touched 
+
+# 2. وضع خاصية disabled بناءً على الشروط
+if st.button("Analyze Satisfaction", disabled=not is_ready):
+
+    # كود التنبؤ
     data = {
         'unnamed:_0': [0],
         'id': [0],
@@ -123,9 +127,9 @@ if st.button("Analyze Satisfaction"):
         'class': [flight_class],
         'flight_distance': [flight_distance],
         'inflight_wifi_service': [wifi_service],
-        'departure/arrival_time_convenient': [time_conv],
+        'departure/arrival_time_convenient': 5,
         'ease_of_online_booking': [online_booking],
-        'gate_location': [gate_loc],
+        'gate_location': 5,
         'food_and_drink': [food_drink],
         'online_boarding': [online_boarding],
         'seat_comfort': [seat_comfort],
@@ -148,19 +152,6 @@ if st.button("Analyze Satisfaction"):
     # حساب الاحتمالية (Confidence)
     proba = model.predict_proba(input_df)[0]
     
-    # 6. عرض النتيجة
-    #st.divider()
-    
-    # فحص النتيجة (سواء كانت 1 أو 'satisfied') حسب كيف تم تدريب الموديل
-    #if str(prediction).lower() == 'satisfied' or prediction == 1:
-       # confidence = proba[1] * 100
-      #  st.success(f"### Result: SATISFIED (Confidence: {confidence:.2f}%) 😊")
-      #  st.balloons()
-   # else:
-        # إذا كانت النتيجة محايدة أو غير راضية، نأخذ احتمال الكلاس الأول
-     #   confidence = proba[0] * 100
-       # st.error(f"### Result: NEUTRAL or DISSATISFIED (Confidence: {confidence:.2f}%) ☹️")
-    # 6. عرض النتيجة (تصميم احترافي ومطور)
     st.divider()
     
     # فحص الحالة وتحديد الألوان
@@ -229,3 +220,7 @@ if st.button("Analyze Satisfaction"):
                          range_y=[0, 5])
         fig_bar.update_layout(margin=dict(t=0, b=0, l=0, r=0), height=250, showlegend=False)
         st.plotly_chart(fig_bar, use_container_width=True)
+else:
+    if not is_ready:
+        st.info("Please fill in all fields")
+
