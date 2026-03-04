@@ -1,76 +1,47 @@
 import streamlit as st
 import joblib
 import pandas as pd
-# استدعاء الكلاس الخاص بك ليفهم الموديل كيفية معالجة البيانات
 from preprocessor import CustomPreprocessor
-# 1. إعدادات الصفحة
+import plotly.express as px
+
 st.set_page_config(page_title="FlightVerdict", page_icon="✈️", layout="centered")
 st.markdown("""
     <style>
-    /* 1. الإبقاء على الخلفية المتدرجة الزرقاء كما هي */
     .stApp {
-        background: linear-gradient(to bottom, #87CEEB 0%, #F0F8FF 100%);
-    }
-    
-    /* 2. جعل مربعات الـ Selectbox بيضاء تماماً */
+        background: linear-gradient(to bottom, #87CEEB 0%, #F0F8FF 100%);}
     div[data-baseweb="select"] > div {
         background-color: white !important;
         border-radius: 5px;
-        color: #003366 !important; /* لون النص داخل المربع عند الاختيار */
-    }
-
-    /* 3. تعديل خاص لمربعات الـ Number Input (الأرقام) لتصبح بيضاء بالكامل */
-    /* هذا يشمل الخلفية وأزرار الزيادة والنقصان */
+        color: #003366 !important;}
     div[data-baseweb="input"] {
         background-color: white !important;
-        border-radius: 5px;
-    }
-    
-    /* جعل الأزرار (+ و -) بيضاء */
+        border-radius: 5px;}
     div[data-baseweb="input"] button {
         background-color: white !important;
-        color: #003366 !important; /* لون الرموز داخل الأزرار */
-        border: none !important;
-    }
-
-    /* ضمان أن حقل النص نفسه أبيض */
+        color: #003366 !important; 
+        border: none !important;}
     div[data-baseweb="input"] input {
         background-color: white !important;
-        color: #003366 !important;
-    }
-    
-    /* 4. تثبيت ألوان نصوص العناوين والأسماء (Labels) لتكون واضحة وغامقة */
+        color: #003366 !important;}
     h1, h2, h3, p, label, .stMarkdown {
-        color: #003366 !important;
-    }
-
-    /* 5. تنسيق التبويبات (Tabs) لتظهر بوضوح فوق الخلفية المتدرجة */
+        color: #003366 !important; }
     .stTabs [data-baseweb="tab-list"] button {
-        color: #003366 !important;
-    }
-
-    /* 6. تنسيق زر "Analyze Satisfaction" ليظل مميزاً */
+        color: #003366 !important;}
     .stButton>button {
         background-color: #0074D9;
         color: white !important;
         border-radius: 20px;
-        width: 100%;
-    }
+        width: 100%;}
     </style>
     """, unsafe_allow_html=True)
-# 2. تحميل الموديل (تم تحميله مرة واحدة فقط لسرعة الأداء)
 @st.cache_resource
 def load_model():
-    # تأكدي أن ملف model.joblib موجود في نفس المجلد
     return joblib.load('model.joblib')
-
 model = load_model()
 
-# 3. واجهة المستخدم (العناوين)
+
 st.title("✈️ FlightVerdict")
 st.markdown("### Predicting Passenger Satisfaction using Machine Learning")
-
-# 4. تقسيم المدخلات إلى تبويبات لتنظيم الـ 14 خدمة
 st.markdown("### 📋 Passenger Info")
 col1, col2 = st.columns(2)
 with col1:
@@ -103,20 +74,15 @@ with col2:
     online_boarding = st.select_slider("Online boarding", options=["",0,1,2,3,4,5], value="")
 
 
-# التحقق أن المستخدم حرك جميع السلايدرات بعيداً عن -1
 sliders = [wifi_service, online_booking, food_drink, seat_comfort, cleanliness, 
            entertainment, on_board, leg_room, baggage, checkin, inflight_serv, online_boarding]
 
-#all_sliders_touched = all(s is not None for s in sliders)
 all_sliders_touched = all(s != "" for s in sliders)
-# 1. جمع شروط التحقق
-# يجب ألا تكون الاختيارات None ويجب ألا يكون العمر 0
+
 is_ready = (gender is not None) and (customer_type is not None) and (type_of_travel is not None) and (flight_class is not None) and all_sliders_touched 
 
-# 2. وضع خاصية disabled بناءً على الشروط
 if st.button("Analyze Satisfaction", disabled=not is_ready):
 
-    # كود التنبؤ
     data = {
         'unnamed:_0': [0],
         'id': [0],
@@ -141,20 +107,11 @@ if st.button("Analyze Satisfaction", disabled=not is_ready):
         'inflight_service': [inflight_serv],
         'cleanliness': [cleanliness],
         'departure_delay_in_minutes': [departure_delay],
-        'arrival_delay_in_minutes': [arrival_delay]
-    }
+        'arrival_delay_in_minutes': [arrival_delay]}
     input_df = pd.DataFrame(data)
-
-    # تنفيذ التنبؤ باستخدام الـ Pipeline
-    # الـ Pipeline سيمر عبر الـ CustomPreprocessor أولاً
-    prediction = model.predict(input_df)[0]
-    
-    # حساب الاحتمالية (Confidence)
-    proba = model.predict_proba(input_df)[0]
-    
-    st.divider()
-    
-    # فحص الحالة وتحديد الألوان
+    prediction = model.predict(input_df)[0]    
+    proba = model.predict_proba(input_df)[0]   
+    st.divider()    
     is_satisfied = (str(prediction).lower() == 'satisfied' or prediction == 1)
     
     if is_satisfied:
@@ -167,60 +124,73 @@ if st.button("Analyze Satisfaction", disabled=not is_ready):
         result_text = "DISSATISFIED"
         st.error(f"### Result: {result_text} ")
         st.snow()
-    # عرض تفاصيل التحليل في أعمدة جذابة
     col_a, col_b = st.columns(2)
     
     with col_a:
         st.metric(label="Status", value=result_text)
     
     with col_b:
-        # اللون الأخضر للرضا والأحمر لعدم الرضا في المقياس
         st.metric(label="Confidence Level", value=f"{confidence:.2f}%", 
                   delta=f"{'+' if is_satisfied else '-'} Analysis Strength")
 
-    # إضافة شريط تقدم مرئي يوضح مدى قوة التوقع
     st.write("**Prediction Analysis Strength:**")
     st.progress(int(confidence))
 
-    # إضافة لمسة تحليلية إضافية (اختياري)
     with st.expander("Show detailed probability breakdown"):
         st.write(f"Probability of being Satisfied: {proba[1]:.2%}")
         st.write(f"Probability of being Neutral/Dissatisfied: {proba[0]:.2%}")
     st.write("---")
     st.subheader("📊 Visual Analytics Breakdown")
+    pie_data = pd.DataFrame({'Status': ['Satisfied', 'Neutral/Dissatisfied'],'Probability': [proba[1], proba[0]]})
+    fig_pie = px.pie(pie_data, values='Probability', names='Status',color='Status',color_discrete_map={'Satisfied':'#28a745','Neutral/Dissatisfied':'#dc3545'},hole=0.4)
+    fig_pie.update_layout(margin=dict(t=0, b=0, l=0, r=0), height=250,paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)')
+    st.plotly_chart(fig_pie, use_container_width=True)
+    st.write("---")
+    st.markdown("### 🎯 **Feature Importance Analysis **")
 
-    # إنشاء عمودين للرسوم البيانية
-    viz_col1, viz_col2 = st.columns(2)
+    static_importance_data = {
+        'Feature': [
+            'Total Delay', 'Departure/Arrival Time Convenient', 'Flight Distance', 
+            'Age', 'Baggage Handling', 'Inflight Service', 'Checkin Service', 
+            'On-board Service', 'Leg Room Service', 'Inflight Experience Score', 
+            'Customer Type', 'Inflight Entertainment', 'Class', 'Type Of Travel', 
+            'Digital Experience', 'Online Boarding'],
+        'Importance': [
+            0.005, 0.012, 0.015, 0.018, 0.019, 0.021, 0.022, 0.026, 
+            0.035, 0.039, 0.044, 0.089, 0.126, 0.130, 0.147, 0.260]}
 
-    with viz_col1:
-        st.write("**Prediction Probability**")
-        # Pie Chart لنسبة الثقة
-        pie_data = pd.DataFrame({
-            'Status': ['Satisfied', 'Neutral/Dissatisfied'],
-            'Probability': [proba[1], proba[0]]
-        })
-        import plotly.express as px
-        fig_pie = px.pie(pie_data, values='Probability', names='Status', 
-                         color='Status',
-                         color_discrete_map={'Satisfied':'#28a745', 'Neutral/Dissatisfied':'#dc3545'},
-                         hole=0.4) # جعلها بشكل Donut لجعلها أجمل
-        fig_pie.update_layout(margin=dict(t=0, b=0, l=0, r=0), height=250)
-        st.plotly_chart(fig_pie, use_container_width=True)
+    df_static = pd.DataFrame(static_importance_data)
 
-    with viz_col2:
-        st.write("**Service Ratings Summary**")
-        # Bar Chart للخدمات الخمس التي تم تقييمها
-        ratings_data = pd.DataFrame({
-            'Service': ['WiFi', 'Booking', 'Food', 'Seat', 'Cleanliness'],
-            'Score': [wifi_service, online_booking, food_drink, seat_comfort, cleanliness]
-        })
-        fig_bar = px.bar(ratings_data, x='Service', y='Score', 
-                         color='Score',
-                         color_continuous_scale='RdYlGn', # تدرج من الأحمر للأخضر
-                         range_y=[0, 5])
-        fig_bar.update_layout(margin=dict(t=0, b=0, l=0, r=0), height=250, showlegend=False)
-        st.plotly_chart(fig_bar, use_container_width=True)
+    df_static['Importance_Pct'] = df_static['Importance'] * 100
+
+    fig = px.bar(
+        df_static,
+        x='Importance_Pct',
+        y='Feature',
+        orientation='h',
+        color='Importance_Pct',
+        color_continuous_scale='Turbo', 
+        text='Importance_Pct',
+        title="Impact of Each Factor on the Verdict (%)")
+
+    fig.update_traces(
+        texttemplate='%{text:.1f}%', 
+        textposition='outside',
+        cliponaxis=False)
+
+    fig.update_layout(
+        showlegend=False,
+        height=700,
+        margin=dict(l=20, r=70, t=50, b=20), 
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color="#003366", size=13),
+        xaxis_title="Influence Percentage (%)",
+        yaxis_title=None,
+        xaxis=dict(range=[0, 30], showgrid=False),
+        coloraxis_showscale=False)
+
+    st.plotly_chart(fig, use_container_width=True)
 else:
     if not is_ready:
         st.info("Please fill in all fields")
-
