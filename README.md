@@ -1,6 +1,13 @@
 # ✈️ FlightVerdict
 ## Predicting Passenger Satisfaction using Machine Learning
-
+<p align="center">
+  <img src="p1.png" width="48%" />
+  <img src="p2.png" width="48%" />
+</p>
+<p align="center">
+  <img src="p3.png" width="48%" />
+  <img src="p4.png" width="48%" />
+</p>
 **FlightVerdict** is an end-to-end Machine Learning application designed to analyze and predict passenger satisfaction levels. This project covers the entire data science lifecycle—from Exploratory Data Analysis (EDA) and preprocessing to building a predictive model and deploying it as an interactive web application.
 
 ---
